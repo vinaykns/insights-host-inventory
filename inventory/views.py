@@ -3,6 +3,7 @@ from django.shortcuts import render
 from django_filters import rest_framework as filters
 from rest_framework import viewsets
 from rest_framework.response import Response
+from rest_framework import status
 from .models import Entity, Tag
 from .serializers import EntitySerializer, TagSerializer
 
@@ -33,11 +34,11 @@ class EntityViewSet(viewsets.ModelViewSet):
     def create(self, request):
 
         def _get_or_create_tag(obj):
-            if isinstance(obj, type({})):
+            if isinstance(obj, dict):
                 ser = TagSerializer(data=obj)
                 ser.is_valid(raise_exception=True)
-                tag = Tag.objects.get_or_create(**obj)
-                return TagSerializer(tag, context={"request": request})["url"]
+                tag, created = Tag.objects.get_or_create(**obj)
+                return TagSerializer(tag, context={"request": request})["url"].value
             else:
                 return obj
 
