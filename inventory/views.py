@@ -1,6 +1,5 @@
 from django.shortcuts import render
 
-# Create your views here.
 from django_filters import rest_framework as filters
 from rest_framework import viewsets
 from rest_framework.response import Response
@@ -32,12 +31,25 @@ class EntityViewSet(viewsets.ModelViewSet):
 
 
     def create(self, request):
-       serializer = self.get_serializer(data=request.data)
-       serializer.is_valid(raise_exception=True)
-       print(serializer)
-       self.perform_create(serializer)
-       headers = self.get_success_headers(serializer.data)
-       return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+        def _get_or_create_tag(obj):
+            if isinstance(obj, type({})):
+                ser = TagSerializer(data=obj)
+                ser.is_valid(raise_exception=True)
+                tag = Tag.objects.get_or_create(**obj)
+                return TagSerializer(tag, context={"request": request})["url"]
+            else:
+                return obj
+
+        request.data["tags"] = [_get_or_create_tag(t) for t in request.data.get("tags", [])]
+        print(request.data)
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(
+            serializer.data, status=status.HTTP_201_CREATED, headers=headers
+        )
 
 
 class TagViewSet(viewsets.ModelViewSet):
