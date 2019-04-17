@@ -1,5 +1,7 @@
+import flask
 import logging
 import sqlalchemy
+import ujson
 import uuid
 
 from enum import Enum
@@ -29,11 +31,12 @@ def add_host_list(host_list):
             response_host_list.append({'status': status_code, 'host': host})
         except InventoryException as e:
             number_of_errors += 1
-            logger.exception("Error adding host: %s" % host)
+            logger.exception("Error adding host", extra={"host": host})
             response_host_list.append({**e.to_json(), "host": host})
         except ValidationError as e:
             number_of_errors += 1
-            logger.exception("Input validation error while adding host: %s" % host)
+            logger.exception("Input validation error while adding host",
+                             extra={"host": host})
             response_host_list.append({"status": 400,
                                        "title": "Bad Request",
                                        "detail": str(e.messages),
@@ -41,7 +44,7 @@ def add_host_list(host_list):
                                        "host": host})
         except Exception as e:
             number_of_errors += 1
-            logger.exception("Error adding host: %s" % host)
+            logger.exception("Error adding host", extra={"host": host})
             response_host_list.append({"status": 500,
                                        "title": "Error",
                                        "type": "unknown",
@@ -51,7 +54,7 @@ def add_host_list(host_list):
     response = {'total': len(response_host_list),
                 'errors': number_of_errors,
                 'data': response_host_list}
-    return response, 207
+    return _build_json_response(response, status=207)
 
 
 def _add_host(host):
@@ -189,16 +192,19 @@ def get_host_list(display_name=None, fqdn=None,
 
 def _build_paginated_host_list_response(total, page, per_page, host_list):
     json_host_list = [host.to_json() for host in host_list]
-    return (
-        {
-            "total": total,
-            "count": len(host_list),
-            "page": page,
-            "per_page": per_page,
-            "results": json_host_list,
-        },
-        200,
-    )
+    json_output = {"total": total,
+                   "count": len(host_list),
+                   "page": page,
+                   "per_page": per_page,
+                   "results": json_host_list,
+                   }
+    return _build_json_response(json_output, status=200)
+
+
+def _build_json_response(json_data, status=200):
+    return flask.Response(ujson.dumps(json_data),
+                          status=status,
+                          mimetype="application/json")
 
 
 def find_hosts_by_display_name(account, display_name):
@@ -293,16 +299,14 @@ def get_host_system_profile_by_id(host_id_list, page=1, per_page=100):
     response_list = [host.to_system_profile_json()
                      for host in query_results.items]
 
-    return (
-        {
-            "total": query_results.total,
-            "count": len(response_list),
-            "page": page,
-            "per_page": per_page,
-            "results": response_list,
-        },
-        200,
-    )
+    json_output = {"total": query_results.total,
+                   "count": len(response_list),
+                   "page": page,
+                   "per_page": per_page,
+                   "results": response_list,
+                   }
+
+    return _build_json_response(json_output, status=200)
 
 
 @api_operation
