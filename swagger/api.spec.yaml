@@ -155,6 +155,36 @@ paths:
                 $ref: '#/components/schemas/HostQueryOutput'
         '400':
           description: Invalid request.
+  '/hosts/{host_id}':
+    patch:
+      tags:
+        - hosts
+      summary: Update a host
+      description: Update a host
+      operationId: api.host.patch_host
+      security:
+        - ApiKeyAuth: []
+      parameters:
+        - in: path
+          name: host_id
+          description: A host ID
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        description: A group of fields to be updated on the host
+        required: true
+        content:
+          application/json:
+            schema:
+              x-body-name: host_data
+              $ref: '#/components/schemas/PatchHostIn'
+      responses:
+        '200':
+          description: Successfully updated the host.
+        '400':
+          description: Invalid request.
         '404':
           description: Host not found.
   '/hosts/{host_id_list}/facts/{namespace}':
@@ -377,6 +407,11 @@ components:
             name.
           type: string
           example: host1.mydomain.com
+        ansible_host:
+          description: >-
+            The ansible host name for remediations
+          type: string
+          example: host1.mydomain.com
         account:
           description: A Red Hat Account number that owns the host.
           type: string
@@ -462,6 +497,12 @@ components:
           description: >-
             A host’s human-readable display name, e.g. in a form of a domain
             name.
+          type: string
+          example: host1.mydomain.com
+          nullable: true
+        ansible_host:
+          description: >-
+            The ansible host name for remediations
           type: string
           example: host1.mydomain.com
           nullable: true
@@ -826,6 +867,8 @@ components:
           type: boolean
         satellite_managed:
           type: boolean
+        cloud_provider:
+          type: string
         yum_repos:
           type: array  # technically a set, ordering is not important
           items:
@@ -855,3 +898,20 @@ components:
           type: array
           items:
             type: string
+    PatchHostIn:
+      title: Host data
+      description: >-
+        Data of a single host to be updated.
+      type: object
+      properties:
+        ansible_host:
+          description: >-
+            The ansible host name for remediations
+          type: string
+          example: host1.mydomain.com
+        display_name:
+          description: >-
+            A host’s human-readable display name, e.g. in a form of a domain
+            name.
+          type: string
+          example: host1.mydomain.com
