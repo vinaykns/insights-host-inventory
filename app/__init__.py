@@ -28,6 +28,7 @@ UNKNOWN_REQUEST_ID_VALUE = "-1"
 def render_exception(exception):
     response = jsonify(exception.to_json())
     response.status_code = exception.status
+    logger.exception(exception)
     return response
 
 
@@ -66,6 +67,7 @@ def create_app(config_name, start_tasks=False, start_payload_tracker=False):
     # Add an error handler that will convert our top level exceptions
     # into error responses
     connexion_app.add_error_handler(InventoryException, render_exception)
+    connexion_app.add_error_handler(Exception, render_exception)
 
     flask_app = connexion_app.app
 
