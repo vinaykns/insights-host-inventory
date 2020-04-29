@@ -29,11 +29,20 @@ class ShutdownHandler:
 
 
 def main():
+    logger.info("info: Starting inventory Service")
+    logger.warning("warning: Starting inventory Service")
+    logger.debug("debug: Starting inventory Service")
+    print("Starting inventory Service")
+
     config_name = os.getenv("APP_SETTINGS", "development")
     application = create_app(config_name, start_tasks=False, start_payload_tracker=True)
     start_http_server(9126)
 
     config = Config(RuntimeEnvironment.server)
+    logger.info("Info: Getting the Kafka Consumer")
+    logger.debug("Debug: Getting the Kafka Consumer")
+    logger.warning("warning: Getting the Kafka Consumer")
+    logger.error("error: Getting the Kafka Consumer")
 
     consumer = KafkaConsumer(
         config.host_ingress_topic,

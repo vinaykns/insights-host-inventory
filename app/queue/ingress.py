@@ -156,9 +156,11 @@ def event_loop(consumer, flask_app, event_producer, handler, shutdown_handler):
         signal.signal(signal.SIGINT, shutdown_handler.signal_handler)  # For Ctrl+C
         while not shutdown_handler.shut_down():
             msgs = consumer.poll(timeout_ms=CONSUMER_POLL_TIMEOUT_MS)
+            logger.warning(f"the message is {msgs}")
             for topic_partition, messages in msgs.items():
                 for message in messages:
                     logger.debug("Message received")
+                    logger.warning("warning: Message received")
                     try:
                         handler(message.value, event_producer)
                         metrics.ingress_message_handler_success.inc()

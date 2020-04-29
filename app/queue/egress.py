@@ -19,10 +19,13 @@ logger = get_logger(__name__)
 class KafkaEventProducer:
     def __init__(self, config):
         logger.info("Starting KafkaEventProducer()")
-        self._kafka_producer = KafkaProducer(bootstrap_servers=config.bootstrap_servers)
+        self._kafka_producer = KafkaProducer(bootstrap_servers=config.bootstrap_servers, max_request_size=20000000)
         self._topic = config.host_egress_topic
 
     def write_event(self, event, key, headers):
+        logger.debug("Topic: %s, key: %s, event: %s, headers: %s", self._topic, key, event, headers)
+        logger.warning("Topic: %s, key: %s, event: %s, headers: %s", self._topic, key, event, headers)
+
         try:
             k = key.encode("utf-8") if key else None
             v = event.encode("utf-8")

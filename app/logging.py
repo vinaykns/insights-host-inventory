@@ -71,6 +71,10 @@ def _get_hostname():
 
 
 def _configure_contextual_logging_filter():
+    # enabled it for debugging purpose.
+    kafkalogger = logging.getLogger("kafka")
+    kafkalogger.setLevel("ERROR")
+
     # Only enable the contextual filter if not in "testing" mode
     root = logging.getLogger()
     root.addFilter(ContextualFilter())

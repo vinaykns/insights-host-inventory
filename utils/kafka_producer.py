@@ -19,7 +19,7 @@ def main():
         all_payloads = [payloads.build_mq_payload() for _ in range(NUM_HOSTS)]
     print("Number of hosts (payloads): ", len(all_payloads))
 
-    producer = KafkaProducer(bootstrap_servers=BOOTSTRAP_SERVERS, api_version=(0, 10))
+    producer = KafkaProducer(bootstrap_servers=BOOTSTRAP_SERVERS, api_version=(0, 10), max_request_size=20000000)
     print("HOST_INGRESS_TOPIC:", HOST_INGRESS_TOPIC)
 
     with TicToc("Send all hosts to queue"):
